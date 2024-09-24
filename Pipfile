@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 bcrypt = "==4.0.1"
+sqlalchemy = "*"
+fastapi = {extras = ["standard"], version = "*"}
 
 [dev-packages]
 
