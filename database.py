@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-SQLALCHEMY_DATABASE_URL='sqlite:///./todos.db' #this is location of my db in todo app
+SQLALCHEMY_DATABASE_URL='sqlite:///./todoapp.db' #this is location of my db in todo app
 
 #engine is something that help in creating connection and usign database in application
 #connect_args={'check_same_thread':False} sqlite by deafault allow only one thread to interact with database but fastpi it
