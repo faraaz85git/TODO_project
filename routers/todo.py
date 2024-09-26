@@ -5,6 +5,7 @@ from pydantic import BaseModel,Field
 from sqlalchemy.orm import Session
 from database import session_local
 from models import Todos
+from .auth import get_curr_user
 router=APIRouter()
 
 #it is creating connection then return data the close
@@ -17,7 +18,7 @@ def get_db():
 
 # it is creating a depency
 db_dependency = Annotated[Session,Depends(get_db)]
-
+user_dependency=Annotated[dict,Depends(get_curr_user)]
 
 class Todo_request(BaseModel):
     id:Optional[int]=Field(description='not required for creating todo',default=None)
@@ -30,19 +31,29 @@ class Todo_request(BaseModel):
 
 #Depends is saying read_all is depend on get db function`
 @router.get('/',status_code=status.HTTP_200_OK)
-async def read_all(db:db_dependency):
-    return db.query(Todos).all()
+async def read_all(user:user_dependency,
+                   db:db_dependency):
+    user_id=user.get('id')
+    return db.query(Todos).filter(Todos.owner_id==user_id).all()
 
 @router.get('/todos/{todo_id}',status_code=status.HTTP_200_OK)
-async def get_todo_by_id(db:db_dependency,todo_id:int=Path(gt=-1)):
-    todo_model=db.query(Todos).filter(Todos.id==todo_id).first()
+async def get_todo_by_id(user:user_dependency,
+                         db:db_dependency,
+                         todo_id:int=Path(gt=-1)):
+    user_id=user.get('id')
+    todo_model=db.query(Todos).filter(Todos.id==todo_id and Todos.owner_id==user_id).first()
     if todo_model is not None:
         return todo_model
     raise HTTPException(status_code=404,detail="NOT FOUND")
 
 @router.post('/todo',status_code=status.HTTP_201_CREATED)
-async def create_todos(db:db_dependency,todo_req:Todo_request):
-    new_todo=Todos(**(todo_req.model_dump()))
+async def create_todos(user:user_dependency,
+                       db:db_dependency,
+                       todo_req:Todo_request):
+    # return {'status': 'run'}
+    if user is None:
+        raise HTTPException(status_code=401,detail='not authorised')
+    new_todo=Todos(**(todo_req.model_dump()),owner_id=user.get('id'))
     db.add(new_todo)
     db.commit()
 

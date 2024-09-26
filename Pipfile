@@ -8,6 +8,7 @@ bcrypt = "==4.0.1"
 sqlalchemy = "*"
 fastapi = {extras = ["standard"], version = "*"}
 passlib = "~=1.7.4"
+python-jose = {extras = ["cryptography"], version = "*"}
 
 [dev-packages]
 
